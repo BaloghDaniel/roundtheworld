@@ -6,9 +6,17 @@ import { beginStravaConnect } from '../lib/strava'
  * Shown before any journey exists.
  *
  * A journey with no activity source cannot move, so connecting Strava is the
- * first thing asked for rather than something to discover later.
+ * first thing asked for rather than something to discover later. It is an ask
+ * and not a wall: the application-wide athlete cap means some people genuinely
+ * cannot connect, and for them a gate with nothing behind it is a dead end.
  */
-export default function ConnectStrava({ onConnected }: { onConnected: () => void }) {
+export default function ConnectStrava({
+  onConnected,
+  onSkip,
+}: {
+  onConnected: () => void
+  onSkip?: () => void
+}) {
   const { signOut } = useAuth()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +68,12 @@ export default function ConnectStrava({ onConnected }: { onConnected: () => void
           <p role="alert" className="text-center text-sm text-danger">
             {error}
           </p>
+        )}
+
+        {onSkip && (
+          <button type="button" onClick={onSkip} className="btn-quiet w-full">
+            Have a look around first
+          </button>
         )}
 
         <div className="flex justify-center gap-5 text-xs text-muted">

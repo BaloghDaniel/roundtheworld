@@ -278,11 +278,16 @@ export default function MapCheck() {
               friends: FAKE_FRIENDS,
               stats: FAKE_STATS,
               journeys: FAKE_LIST,
+              strava: {
+                connected: true,
+                athlete_id: 12345678,
+                last_sync_at: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+              },
             }}
           />
         )}
         {mode === 'signin' && <SignInScreen />}
-        {mode === 'connect' && <ConnectScreen onConnected={noop} />}
+        {mode === 'connect' && <ConnectScreen onConnected={noop} onSkip={noop} />}
         {mode === 'new' && <OnboardingScreen onStarted={noop} onCancel={noop} />}
         {mode === 'friends' && <FriendsScreen onBack={noop} />}
       </Suspense>

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import StravaBanner from '../components/StravaBanner'
 import { fetchJourney, formatKm, type Journey } from '../lib/journey'
-import { connectOutcome, fetchStravaStatus, syncStrava, type StravaStatus } from '../lib/strava'
+import { syncStrava, type StravaStatus } from '../lib/strava'
 import Avatar from '../components/Avatar'
 import { fetchGroupState, type GroupState } from '../lib/social'
 import { supabase } from '../lib/supabase'
@@ -23,15 +23,16 @@ function Readout({ label, value, hint }: { label: string; value: string; hint?: 
 export default function JourneyScreen({
   journey: initial,
   onBack,
+  strava,
 }: {
   journey: Journey
   onBack: () => void
+  strava?: StravaStatus | null
 }) {
   const [journey, setJourney] = useState(initial)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [focus, setFocus] = useState(0)
-  const [strava, setStrava] = useState<StravaStatus | null>(null)
   const [group, setGroup] = useState<GroupState | null>(null)
   const [selfId, setSelfId] = useState<string | undefined>()
 
@@ -49,18 +50,6 @@ export default function JourneyScreen({
     // Only on mount and when the group changes; refresh() covers updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [journey.group_id])
-
-  useEffect(() => {
-    fetchStravaStatus().then(setStrava).catch(() => setStrava(null))
-  }, [])
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.has('strava')) {
-      setMessage(connectOutcome(params))
-      window.history.replaceState({}, '', import.meta.env.BASE_URL)
-    }
-  }, [])
 
   async function sync() {
     setBusy(true)
@@ -123,7 +112,8 @@ export default function JourneyScreen({
             type="button"
             onClick={() => void sync()}
             disabled={busy || !strava?.connected}
-            className="glass shrink-0 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wide text-accent-ink transition hover:bg-raised disabled:opacity-50"
+            title={strava?.connected ? 'Pull new activities from Strava' : 'Connect Strava first'}
+            className="glass shrink-0 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wide text-accent-ink transition hover:bg-raised disabled:text-muted"
           >
             {busy ? '…' : 'Sync'}
           </button>

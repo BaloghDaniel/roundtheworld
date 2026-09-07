@@ -4,7 +4,8 @@ import Avatar from '../components/Avatar'
 import { BadgeTile } from '../components/Badges'
 import { useAuth } from '../lib/auth'
 import { fetchJourneys, type JourneySummary } from '../lib/journey'
-import { badgesFor, EMPTY_STATS, fetchStats, km, type Stats } from '../lib/stats'
+import { badgesFor, EMPTY_STATS, fetchStats, km, relativeDay, type Stats } from '../lib/stats'
+import { disconnectStrava, fetchStravaStatus, type StravaStatus } from '../lib/strava'
 import { useTheme, type ThemeChoice } from '../lib/theme'
 import {
   amIAdmin,
@@ -27,6 +28,7 @@ type Props = {
     friends: Friend[]
     stats: Stats
     journeys: JourneySummary[]
+    strava: StravaStatus | null
   }
 }
 
@@ -53,6 +55,8 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
   const [stats, setStats] = useState<Stats>(EMPTY_STATS)
   const [journeys, setJourneys] = useState<JourneySummary[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
+  const [strava, setStrava] = useState<StravaStatus | null>(null)
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -65,15 +69,17 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
       setFriends(preview.friends)
       setStats(preview.stats)
       setJourneys(preview.journeys)
+      setStrava(preview.strava)
       return
     }
     try {
-      const [p, f, admin, s, j] = await Promise.all([
+      const [p, f, admin, s, j, st] = await Promise.all([
         fetchMyProfile(),
         fetchFriends(),
         amIAdmin().catch(() => false),
         fetchStats().catch(() => EMPTY_STATS),
         fetchJourneys().catch(() => []),
+        fetchStravaStatus().catch(() => null),
       ])
       setProfile(p)
       setName(p?.display_name ?? '')
@@ -81,6 +87,7 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
       setIsAdmin(admin)
       setStats(s)
       setJourneys(j)
+      setStrava(st)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load your profile')
     }
@@ -103,6 +110,23 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
     } finally {
       setBusy(null)
       if (fileInput.current) fileInput.current.value = ''
+    }
+  }
+
+  // Strava's terms require a disconnection to delete the tokens *and* the
+  // activities, so this is genuinely destructive: every journey's distance
+  // drops to zero. Two taps, and the consequence stated before the first.
+  async function disconnect() {
+    setBusy('strava')
+    setError(null)
+    try {
+      await disconnectStrava()
+      setConfirmingDisconnect(false)
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not disconnect Strava')
+    } finally {
+      setBusy(null)
     }
   }
 
@@ -302,6 +326,56 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="eyebrow px-1">Strava</h2>
+        <div className="card px-4 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#FC4C02] text-white">
+              <svg viewBox="0 0 24 24" className="size-5" fill="currentColor" aria-hidden>
+                <path d="M13.8 0 7.4 12.6h3.8L13.8 7.4l2.6 5.2h3.7L13.8 0Zm2.6 12.6-1.9 3.8-1.9-3.8h-2.9L14.5 21l4.8-8.4h-2.9Z" />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-ink">
+                {strava?.connected ? 'Connected' : 'Not connected'}
+              </div>
+              <div className="truncate text-xs text-muted">
+                {strava?.connected
+                  ? strava.last_sync_at
+                    ? `Last synced ${relativeDay(strava.last_sync_at)}`
+                    : 'Not synced yet'
+                  : 'Nothing is feeding your distance'}
+              </div>
+            </div>
+            {strava?.connected && (
+              <button
+                type="button"
+                onClick={() =>
+                  confirmingDisconnect ? void disconnect() : setConfirmingDisconnect(true)
+                }
+                disabled={busy === 'strava'}
+                className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold transition disabled:opacity-50 ${
+                  confirmingDisconnect ? 'bg-danger text-canvas' : 'text-muted hover:text-danger'
+                }`}
+              >
+                {busy === 'strava'
+                  ? 'Disconnecting…'
+                  : confirmingDisconnect
+                    ? 'Confirm'
+                    : 'Disconnect'}
+              </button>
+            )}
+          </div>
+          {confirmingDisconnect && (
+            <p className="mt-3 border-t border-hair pt-3 text-xs leading-relaxed text-muted">
+              Disconnecting deletes your Strava tokens and every activity we
+              hold — Strava's terms require both. Your journeys stay, but their
+              distance drops to zero until you reconnect and sync.
+            </p>
+          )}
+        </div>
       </section>
 
       <section className="space-y-2">

@@ -103,9 +103,24 @@ await send('Page.navigate', { url })
 await sleep(Number(waitMs))
 
 if (clickSel) {
+  // `text=Disconnect` clicks the control with that exact label. CSS alone
+  // tends to match the first of several visually identical buttons, which
+  // silently photographs the wrong state.
   const hit = await send('Runtime.evaluate', {
-    expression: `(() => { const el = document.querySelector(${JSON.stringify(clickSel)});
-      if (!el) return 'not found'; el.click(); return 'clicked'; })()`,
+    expression: `(() => {
+      const sel = ${JSON.stringify(clickSel)}
+      let el
+      if (sel.startsWith('text=')) {
+        const want = sel.slice(5).trim()
+        el = [...document.querySelectorAll('button, a, [role=button]')]
+          .find(n => n.textContent.trim() === want)
+      } else {
+        el = document.querySelector(sel)
+      }
+      if (!el) return 'not found'
+      el.click()
+      return 'clicked'
+    })()`,
     returnByValue: true,
   })
   console.log(`click ${clickSel}: ${hit.result.value}`)

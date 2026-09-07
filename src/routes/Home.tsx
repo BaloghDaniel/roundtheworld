@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Avatar from '../components/Avatar'
 import Badges from '../components/Badges'
+import StravaBanner from '../components/StravaBanner'
 import WeekChart, { weekSpan } from '../components/WeekChart'
 import { deleteJourney, fetchJourneys, type JourneySummary } from '../lib/journey'
 import {
@@ -24,6 +25,12 @@ type Props = {
   onOpen: (id: string) => void
   onNew: () => void
   onProfile: () => void
+  /** Whether there is anything feeding the numbers below. */
+  stravaConnected?: boolean
+  /** A sync is running; the figures may be about to change. */
+  syncing?: boolean
+  /** Bumped by the app when a sync lands, to reload without polling. */
+  refreshKey?: number
   /** Fixture data for ?mapcheck=home, so the screen can be photographed
    *  without a session. Never set in the app itself. */
   preview?: {
@@ -128,9 +135,11 @@ function JourneyCard({
         </div>
       </button>
 
-      <div className="mt-3 flex items-center justify-between border-t border-hair px-4 py-2.5">
-        <span className="text-[11px] text-muted">
-          Counting from {new Date(journey.activities_from).toLocaleDateString()}
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-hair px-4 py-2.5">
+        <span className="text-[11px] leading-snug text-muted">
+          {confirming
+            ? 'Your activities are untouched — only this journey goes.'
+            : `Counting from ${new Date(journey.activities_from).toLocaleDateString()}`}
         </span>
         <button
           type="button"
@@ -149,7 +158,15 @@ function JourneyCard({
 
 /* -------------------------------------------------------------------- screen */
 
-export default function Home({ onOpen, onNew, onProfile, preview }: Props) {
+export default function Home({
+  onOpen,
+  onNew,
+  onProfile,
+  preview,
+  stravaConnected = true,
+  syncing = false,
+  refreshKey = 0,
+}: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [invites, setInvites] = useState<GroupInvite[]>([])
   const [journeys, setJourneys] = useState<JourneySummary[] | null>(null)
@@ -186,7 +203,8 @@ export default function Home({ onOpen, onNew, onProfile, preview }: Props) {
 
   useEffect(() => {
     void load()
-  }, [load])
+    // refreshKey changes when a background sync writes new activities.
+  }, [load, refreshKey])
 
   async function remove(id: string) {
     setBusy(id)
@@ -247,12 +265,23 @@ export default function Home({ onOpen, onNew, onProfile, preview }: Props) {
         </p>
       )}
 
+      {!stravaConnected && <StravaBanner />}
+
       {/* The week is the habit, so it gets the loudest panel on the screen. */}
       <section className="card-accent px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-accent/60">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-on-accent/60">
               This week
+              {syncing && (
+                <>
+                  <span
+                    aria-hidden
+                    className="size-2.5 animate-spin rounded-full border-[1.5px] border-on-accent/30 border-t-on-accent/80"
+                  />
+                  <span className="sr-only">Syncing with Strava</span>
+                </>
+              )}
             </div>
             <div className="mt-1 flex items-baseline gap-1.5 font-extrabold tabular-nums tracking-tighter text-on-accent">
               <span className="count-in text-5xl leading-none">{km(stats.week_m)}</span>

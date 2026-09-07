@@ -82,6 +82,18 @@ never set by the app itself, so the fixture cannot leak into production.
 If you are changing a screen with no preview route, add one to `MapCheck.tsx`
 before starting. A screen you cannot photograph is a screen you cannot check.
 
+**Flow, not just screens.** Anything that only exists in the assembled,
+signed-in app — history and the back button, sync on open, a toast raised by a
+redirect — has no preview route by definition. `scripts/flowcheck.mjs` creates
+a throwaway user, drives the real app as them over CDP, asserts, screenshots,
+and deletes the user:
+
+```sh
+node --env-file=.env.local scripts/flowcheck.mjs
+```
+
+Add a check to it rather than reasoning about whether a flow change worked.
+
 ## What to check in every screenshot
 
 - **Overflow.** Nothing clipped at the right edge; no horizontal scroll.

@@ -5,7 +5,13 @@ import { createGoalRoute, placeFromCoords, startRouteJourney, type Place } from 
 import { currentPosition, startJourney } from '../lib/journey'
 import { fetchFriends, startGroupJourney, type Friend } from '../lib/social'
 
-type Props = { onStarted: (journeyId?: string) => void; onCancel?: () => void }
+type Props = {
+  onStarted: (journeyId?: string) => void
+  onCancel?: () => void
+  /** A journey with nothing feeding it will sit at zero, which is worth
+   *  saying before someone starts one rather than after. */
+  stravaConnected?: boolean
+}
 type Kind = 'world' | 'goal'
 
 const today = new Date().toISOString().slice(0, 10)
@@ -25,7 +31,7 @@ const KINDS: { id: Kind; title: string; hint: string; icon: string }[] = [
   },
 ]
 
-export default function Onboarding({ onStarted, onCancel }: Props) {
+export default function Onboarding({ onStarted, onCancel, stravaConnected = true }: Props) {
   const [kind, setKind] = useState<Kind | null>(null)
   // Today by default: a new goal starts from now, not from history.
   const [from, setFrom] = useState(today)
@@ -96,7 +102,6 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
   return (
     <main className="screen mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 py-8">
       <div className="space-y-2.5">
-        <div className="eyebrow">Step one</div>
         <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tighter text-ink">
           {onCancel ? 'Start a new journey' : 'Where are you going?'}
         </h1>
@@ -230,6 +235,13 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
         <p className="text-xs leading-relaxed text-muted">
           The world route is a loop, so your starting point rotates it. You will
           be placed at the nearest point on the road.
+        </p>
+      )}
+
+      {!stravaConnected && (
+        <p className="rounded-2xl bg-raised px-4 py-3 text-xs leading-relaxed text-muted">
+          Strava is not connected, so this journey will start at 0 km and stay
+          there until it is. You can connect at any time — nothing is lost.
         </p>
       )}
 

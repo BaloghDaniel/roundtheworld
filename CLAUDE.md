@@ -217,6 +217,11 @@ because they were reasoned about rather than run.
   sign in for a real JWT, exercise the RPCs and Edge Functions as that user,
   then delete the users — everything cascades. That is how the Tag Along leash,
   the friendship flow and the storage policies were checked.
+- **Flow:** `node --env-file=.env.local scripts/flowcheck.mjs` does the same
+  for the assembled app — it injects a real session and drives the browser, so
+  history and the back button, sync on open, and the toast a redirect raises
+  are observed rather than argued about. Add a check to it rather than
+  reasoning about whether a flow change worked.
 - **Signed-in screens:** inject a session by setting
   `localStorage['sb-vdtnjwztjsnolpnetqyx-auth-token']` through
   `Page.addScriptToEvaluateOnNewDocument` before navigating.
@@ -224,6 +229,9 @@ because they were reasoned about rather than run.
   on "the latest run" once read a stale deployment and produced a wrong
   conclusion.
 - Run `get_advisors` after schema changes.
+- **`npx tsc --noEmit` checks nothing here.** The root `tsconfig.json` is
+  solution-style with `files: []`, so it silently passes. `npm run build` runs
+  `tsc -b`, which is the real check.
 
 ## State
 
