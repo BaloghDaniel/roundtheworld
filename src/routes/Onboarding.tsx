@@ -138,7 +138,7 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
         />
       )}
 
-      {kind && (
+      {kind && invited.size === 0 && (
       <label className="block space-y-2">
         <span className="text-sm font-medium text-ink">Count activities from</span>
         <input
@@ -189,8 +189,9 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
             })}
           </ul>
           <p className="text-xs text-muted">
-            You each run the whole distance. If one of you falls more than 100 km
-            behind, the runner ahead waits until the party closes up.
+            You each run the whole distance, counting from today so nobody
+            starts ahead. If one of you falls more than 100 km behind, the
+            runner in front waits until the party closes up.
           </p>
         </div>
       )}

@@ -20,6 +20,7 @@ export type Friend = Profile & {
 
 export type GroupInvite = {
   group_id: string
+  starts_on?: string
   mode: 'tag_along' | 'race' | 'scramble'
   max_gap_m: number
   route_name: string
@@ -74,11 +75,12 @@ export const fetchGroupInvites = () => rpc<GroupInvite[]>('my_group_invites')
 export const fetchGroupState = (groupId: string) =>
   rpc<GroupState | null>('group_state', { p_group_id: groupId })
 
-export const respondToGroupInvite = (groupId: string, accept: boolean, from: string) =>
+/** Accept or decline. The group's own start date applies to everyone, so
+ *  there is no date to choose. */
+export const respondToGroupInvite = (groupId: string, accept: boolean) =>
   rpc<string | null>('respond_to_group_invite', {
     p_group_id: groupId,
     p_accept: accept,
-    p_from: from,
   })
 
 export const startGroupJourney = (opts: {
