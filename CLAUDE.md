@@ -102,6 +102,18 @@ reintroduce the bug.
 - **Tag Along banks, never discards.** Nobody's shown position may get more than
   `max_gap_m` (100 km) ahead of the runner furthest back. The leader's extra
   distance stays in `raw_m` and reappears when the party closes up.
+- **One `can_read_route()`, not four copies of the rule.** A goal route belongs
+  to whoever created it, so a tagged-along runner holds a journey on a route
+  they do not own. Route visibility was spelled out separately in the `routes`,
+  `route_segments` and `route_landmarks` policies and again inside
+  `route_geometry`; fixing one left the others owner-only, and the journey then
+  appeared with empty geometry. All four go through the helper now — a new
+  route-reading path means calling it, not restating the test.
+- **A group has one start date.** `journey_groups.starts_on` applies to every
+  member and accepting an invitation cannot choose another. Picking your own
+  meant tagging along with someone who began months ago: the newcomer starts
+  hopelessly behind and, under the leash rule, instantly pins the leader.
+
 - **Column grants, not a column REVOKE.** The "update own profile" policy lets
   a user write their own row, and therefore every column on it. A column-level
   `REVOKE` does *not* close that: Postgres keeps the broader table-wide `UPDATE`
