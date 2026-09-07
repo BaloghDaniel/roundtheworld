@@ -40,7 +40,7 @@ function BackButton({ onBack }: { onBack: () => void }) {
       aria-label="Back"
       className="card grid size-10 place-items-center text-ink transition hover:bg-raised"
     >
-      <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d="M15 18 9 12l6-6" />
       </svg>
     </button>
@@ -357,7 +357,7 @@ export default function Profile({ onBack, onFindFriends, preview }: Props) {
                 }
                 disabled={busy === 'strava'}
                 className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold transition disabled:opacity-50 ${
-                  confirmingDisconnect ? 'bg-danger text-canvas' : 'text-muted hover:text-danger'
+                  confirmingDisconnect ? 'bg-danger text-on-danger' : 'text-muted hover:text-danger'
                 }`}
               >
                 {busy === 'strava'

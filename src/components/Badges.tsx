@@ -61,7 +61,7 @@ export default function Badges({ badges }: { badges: Badge[] }) {
   const earned = badges.filter((b) => b.earned).length
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-2.5">
       <div className="flex items-baseline justify-between px-1">
         <h2 className="eyebrow">Achievements</h2>
         <span className="text-[11px] tabular-nums text-muted">

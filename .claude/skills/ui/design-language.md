@@ -27,7 +27,8 @@ never sees a white flash.
 | `accent` | `#bcff00` | `#bcff00` | Fills: buttons, bars, the hero panel |
 | `on-accent` | `#061414` | `#061414` | Anything drawn *on* the lime |
 | `accent-ink` | `#3f5b00` | `#bcff00` | Accent-coloured **text** |
-| `danger` | `#a51c14` | `#ff8a80` | Errors only |
+| `danger` | `#b3261e` | `#ff5f52` | Errors only |
+| `on-danger` | `#ffffff` | `#2b0603` | Text on a danger fill |
 | `done` | `#bcff00` | `#bcff00` | Distance covered |
 | `ahead` | `#96998c` | `#96998c` | Distance remaining |
 
@@ -51,6 +52,24 @@ neutral grey. Neither changes with the theme — a route that recolours itself
 when the basemap flips stops being readable as progress. A progress *track* is
 `bg-ahead/25`, never `bg-raised`: raised is a whisker from the card behind it
 and an empty bar disappears.
+
+## Browser surfaces carry the design too
+
+Selection, the caret, scrollbars and the focus ring ship with defaults that
+belong to no design system, and they are on screen as often as anything we
+drew. `index.css` themes all four: lime selection, an `accent-ink` caret, a
+hairline scrollbar thumb, and one `:focus-visible` outline in `accent-ink` —
+which the lime panel flips to `on-accent`, since accent-on-accent is invisible.
+
+## Labels above figures, never above headings
+
+`eyebrow` labels a **number**: "This week" over 18.4 km, "Travelled" over
+201.0 km. That is a readout, and it is the core unit of this design.
+
+It is not a kicker. A small label above a heading that says roughly what the
+heading says — "Round the world" over a name, "Circumnavigation" over "Around
+the World" — is decoration that steals the heading's weight. Where the
+category is real information, it goes inline as a `chip`.
 
 ## Brand colours are not themeable
 
@@ -82,6 +101,30 @@ them turns the label invisible in one mode.
 another way to present a number. Screen headline `text-[1.75rem]` to
 `text-[2.75rem]`, extrabold, `tracking-tighter`. Hero figure `text-5xl`, stat
 grid `text-xl`, prose `text-sm text-muted` with `text-pretty` beyond one line.
+
+`tracking-tighter` is redefined to **-0.04em**. Tailwind's own value is
+-0.05em, which is past the point where display letterforms start colliding.
+
+## Icons are drawn, in one family
+
+Authored SVG at `strokeWidth="2.2"` for chrome at 16–20px, `"3"` for the small
+confirmation marks inside a 12–14px circle. No keyboard characters standing in
+for icons — a literal `+` in a button is not a plus icon.
+
+## Weight, not a wall of cards
+
+A screen that is one stack of identical cards has flattened everything to
+equal importance. Home runs three weights: the lime panel, then bare figures
+straight on the canvas, then the cards that carry the primary task, then a
+hairline-divided list. Spacing follows — the week panel and the totals are one
+thought and sit `mt-3` apart, sections below get `mt-8`.
+
+## One authored moment
+
+The week's bars rise from the baseline as the screen settles, staggered 45ms
+apart. That is the moment; everything else is a state change, not a
+performance. Disabled under `prefers-reduced-motion` along with `screen` and
+`count-in`.
 
 ## Progress is the point
 

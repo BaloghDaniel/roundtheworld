@@ -14,11 +14,11 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 
-const [url, out, width = '430', height = '930', waitMs = '9000', scheme, clickSel] =
+const [url, out, width = '430', height = '930', waitMs = '9000', scheme, clickSel, keys] =
   process.argv.slice(2)
 if (!url || !out) {
   console.error(
-    'usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark] [clickSelector]',
+    'usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark] [clickSelector] [keys=Tab,Tab]',
   )
   process.exit(1)
 }
@@ -125,6 +125,31 @@ if (clickSel) {
   })
   console.log(`click ${clickSel}: ${hit.result.value}`)
   await sleep(1200)
+}
+
+// `keys=Tab,Tab,Tab` walks the keyboard focus order. Focus rings only appear
+// under :focus-visible, which programmatic .focus() does not trigger -- so a
+// real key event is the only way to photograph them.
+if (keys) {
+  for (const key of keys.replace(/^keys=/, '').split(',')) {
+    for (const type of ['keyDown', 'keyUp']) {
+      await send('Input.dispatchKeyEvent', {
+        type,
+        key,
+        code: key,
+        windowsVirtualKeyCode: key === 'Tab' ? 9 : key === 'Enter' ? 13 : 0,
+        nativeVirtualKeyCode: key === 'Tab' ? 9 : key === 'Enter' ? 13 : 0,
+      })
+    }
+    await sleep(120)
+  }
+  const focused = await send('Runtime.evaluate', {
+    expression: `(document.activeElement?.textContent?.trim().slice(0, 40)
+      || document.activeElement?.getAttribute('aria-label') || document.activeElement?.tagName)`,
+    returnByValue: true,
+  })
+  console.log(`focus after ${keys}: ${focused.result.value}`)
+  await sleep(400)
 }
 
 // Anything wider than the viewport is a layout bug worth seeing in numbers.

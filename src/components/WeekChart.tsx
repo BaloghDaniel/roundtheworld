@@ -26,11 +26,12 @@ export default function WeekChart({ weeks }: { weeks: WeekBucket[] }) {
         return (
           <div key={w.start} className="flex flex-1 flex-col justify-end">
             <div
-              className="w-full rounded-sm transition-[height] duration-500"
+              className="bar-rise w-full rounded-sm"
               style={{
                 height: `${pct}%`,
                 background: 'currentColor',
                 opacity: i === last ? 1 : 0.28,
+                animationDelay: `${i * 45}ms`,
               }}
             />
           </div>

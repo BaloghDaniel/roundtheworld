@@ -77,7 +77,7 @@ export default function SignIn() {
         {POINTS.map(([head, tail]) => (
           <li key={head} className="flex items-start gap-3">
             <span className="mt-1 grid size-5 shrink-0 place-items-center rounded-full bg-accent text-on-accent">
-              <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <svg viewBox="0 0 24 24" className="size-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="m5 13 4 4L19 7" />
               </svg>
             </span>

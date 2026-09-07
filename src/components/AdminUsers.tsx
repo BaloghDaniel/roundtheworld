@@ -86,7 +86,7 @@ export default function AdminUsers() {
                     disabled={busy === user.id}
                     className={`shrink-0 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition ${
                       confirming === user.id
-                        ? 'bg-danger text-canvas'
+                        ? 'bg-danger text-on-danger'
                         : 'text-muted hover:text-danger'
                     }`}
                   >

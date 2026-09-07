@@ -131,7 +131,7 @@ export default function Onboarding({ onStarted, onCancel, stravaConnected = true
                   on ? 'bg-accent text-on-accent' : 'bg-raised text-muted'
                 }`}
               >
-                <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d={k.icon} />
                 </svg>
               </span>

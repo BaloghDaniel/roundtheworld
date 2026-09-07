@@ -38,7 +38,7 @@ function Toast({ text, onDismiss }: { text: string; onDismiss: () => void }) {
           aria-label="Dismiss"
           className="-mr-1 -mt-0.5 shrink-0 rounded-full p-1 text-muted transition hover:text-ink"
         >
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>

@@ -86,8 +86,10 @@ function JourneyCard({
         onClick={onOpen}
         className="block w-full px-4 pt-4 text-left transition hover:bg-raised"
       >
-        <div className="flex items-center gap-2">
-          <span className="eyebrow">{journey.is_loop ? 'Circumnavigation' : 'Goal'}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="chip bg-raised text-muted">
+            {journey.is_loop ? 'Circumnavigation' : 'Goal'}
+          </span>
           {journey.laps > 0 && (
             <span className="chip bg-accent text-on-accent">Lap {journey.laps + 1}</span>
           )}
@@ -224,7 +226,7 @@ export default function Home({
   const badges = badgesFor(stats, journeys ?? [])
 
   return (
-    <main className="screen mx-auto flex min-h-dvh max-w-lg flex-col gap-5 px-4 py-5">
+    <main className="screen mx-auto flex min-h-dvh max-w-lg flex-col px-4 py-5">
       <header className="flex items-center gap-3">
         <img
           src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
@@ -233,20 +235,17 @@ export default function Home({
           width={36}
           height={36}
         />
-        <div className="min-w-0 flex-1">
-          <div className="eyebrow">Round the world</div>
-          <div className="truncate text-sm font-bold tracking-tight text-ink">
-            {profile?.display_name ?? 'Your journeys'}
-          </div>
+        <div className="min-w-0 flex-1 truncate text-[0.95rem] font-bold tracking-tight text-ink">
+          {profile?.display_name ?? 'Your journeys'}
         </div>
         <button
           type="button"
           onClick={onNew}
-          className="shrink-0 rounded-full bg-accent px-3.5 py-2.5 text-[11px] font-extrabold uppercase tracking-wide text-on-accent transition active:scale-[0.98] hover:brightness-105"
+          className="flex shrink-0 items-center gap-1 rounded-full bg-accent px-3.5 py-2.5 text-[11px] font-extrabold uppercase tracking-wide text-on-accent transition active:scale-[0.98] hover:brightness-105"
         >
-          <span aria-hidden className="mr-1 text-sm leading-none">
-            +
-          </span>
+          <svg viewBox="0 0 24 24" className="-ml-0.5 size-3.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
           New
         </button>
         <button
@@ -260,15 +259,19 @@ export default function Home({
       </header>
 
       {error && (
-        <p role="alert" className="card px-4 py-3 text-sm text-danger">
+        <p role="alert" className="card mt-4 px-4 py-3 text-sm text-danger">
           {error}
         </p>
       )}
 
-      {!stravaConnected && <StravaBanner />}
+      {!stravaConnected && (
+        <div className="mt-5">
+          <StravaBanner />
+        </div>
+      )}
 
       {/* The week is the habit, so it gets the loudest panel on the screen. */}
-      <section className="card-accent px-5 py-5">
+      <section className="card-accent mt-5 px-5 py-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-on-accent/60">
@@ -323,14 +326,14 @@ export default function Home({
         </div>
       </section>
 
-      <section className="card grid grid-cols-3 divide-x divide-hair py-3.5">
+      <section className="mt-3 grid grid-cols-3 divide-x divide-hair">
         <Stat label="Total" value={km(stats.total_m)} unit="km" />
         <Stat label="Best week" value={km(stats.best_week_m)} unit="km" />
         <Stat label="Activities" value={String(stats.activity_count)} />
       </section>
 
       {invites.length > 0 && (
-        <section className="space-y-2">
+        <section className="mt-8 space-y-2.5">
           <h2 className="eyebrow px-1">Invitations</h2>
           <ul className="space-y-2">
             {invites.map((invite) => (
@@ -376,7 +379,7 @@ export default function Home({
         </section>
       )}
 
-      <section className="space-y-2">
+      <section className="mt-8 space-y-2.5">
         <div className="flex items-baseline justify-between px-1">
           <h2 className="eyebrow">Journeys</h2>
           {journeys && journeys.length > 0 && (
@@ -419,14 +422,16 @@ export default function Home({
         )}
       </section>
 
-      <Badges badges={badges} />
+      <div className="mt-8">
+        <Badges badges={badges} />
+      </div>
 
       {stats.recent.length > 0 && (
-        <section className="space-y-2">
+        <section className="mt-8 space-y-2.5 pb-2">
           <h2 className="eyebrow px-1">Recent activity</h2>
-          <ul className="card divide-y divide-hair">
+          <ul className="divide-y divide-hair border-y border-hair">
             {stats.recent.map((a) => (
-              <li key={a.start_date} className="flex items-center gap-3 px-4 py-3">
+              <li key={a.start_date} className="flex items-center gap-3 px-1 py-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-accent-ink">
                   <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M13 4a1 1 0 1 0 0-.001M7 21l3-6 4-2 2 4 3 1M6 12l2-4 4-1 3 3" />

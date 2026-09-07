@@ -101,9 +101,8 @@ export default function JourneyScreen({
             </svg>
           </button>
 
-          <div className="glass min-w-0 flex-1 px-3.5 py-2">
-            <div className="eyebrow">{journey.is_loop ? 'Circumnavigation' : 'Goal'}</div>
-            <div className="truncate text-sm font-semibold tracking-tight text-ink">
+          <div className="glass flex min-w-0 flex-1 items-center px-4 py-2.5">
+            <div className="truncate text-[0.95rem] font-bold tracking-tight text-ink">
               {title}
             </div>
           </div>

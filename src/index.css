@@ -20,7 +20,8 @@
   --c-accent: #bcff00;
   --c-on-accent: #061414;
   --c-accent-ink: #3f5b00;
-  --c-danger: #a51c14;
+  --c-danger: #b3261e;
+  --c-on-danger: #ffffff;
   --c-done: #bcff00;
   --c-ahead: #96998c;
   --shadow-card: 0 1px 2px rgb(6 20 20 / 0.05), 0 10px 30px rgb(6 20 20 / 0.09);
@@ -40,7 +41,8 @@
     --c-accent: #bcff00;
     --c-on-accent: #061414;
     --c-accent-ink: #bcff00;
-    --c-danger: #ff8a80;
+    --c-danger: #ff5f52;
+    --c-on-danger: #2b0603;
     --c-done: #bcff00;
     --c-ahead: #96998c;
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.45);
@@ -61,7 +63,8 @@
   --c-accent: #bcff00;
   --c-on-accent: #061414;
   --c-accent-ink: #bcff00;
-  --c-danger: #ff8a80;
+  --c-danger: #ff5f52;
+  --c-on-danger: #2b0603;
   --c-done: #bcff00;
   --c-ahead: #96998c;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.45);
@@ -71,6 +74,9 @@
 }
 
 @theme inline {
+  /* Tailwind's own `tracking-tighter` is -0.05em, past the floor where
+     display type starts losing letterforms. */
+  --tracking-tighter: -0.04em;
   --color-canvas: var(--c-canvas);
   --color-surface: var(--c-surface);
   --color-raised: var(--c-raised);
@@ -81,6 +87,7 @@
   --color-on-accent: var(--c-on-accent);
   --color-accent-ink: var(--c-accent-ink);
   --color-danger: var(--c-danger);
+  --color-on-danger: var(--c-on-danger);
   --color-done: var(--c-done);
   --color-ahead: var(--c-ahead);
 }
@@ -90,6 +97,52 @@ body {
   /* Keep content clear of the notch and the home indicator when installed. */
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
     env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ------------------------------------------------------- browser surfaces
+   Selection, the caret, scrollbars and the focus ring ship with defaults
+   that belong to no design system, and they are on screen as often as
+   anything we drew. */
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+:root {
+  caret-color: var(--c-accent-ink);
+  scrollbar-color: var(--c-hair) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-hair);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-muted);
+  background-clip: content-box;
+}
+
+/* One focus ring, from the palette, everywhere. Inside the lime panel the
+   accent would be invisible against its own ground, so the panel flips the
+   token rather than the rule. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--c-accent-ink);
+  outline-offset: 2px;
+}
+
+a {
+  text-underline-offset: 0.2em;
 }
 
 /* ------------------------------------------------------------- utilities */
@@ -114,6 +167,9 @@ body {
 @utility card-accent {
   background: var(--c-accent);
   color: var(--c-on-accent);
+  /* Accent-on-accent is invisible, so anything focus-ringed in here rings
+     with the foreground instead. */
+  --c-accent-ink: var(--c-on-accent);
   box-shadow: var(--shadow-lift);
   @apply rounded-[1.75rem];
 }
@@ -176,6 +232,18 @@ body {
   animation: rise 0.22s ease-out both;
 }
 
+/* The one authored moment: the week's bars rise from the baseline as the
+   screen settles, staggered left to right so the eye reads them in order. */
+@keyframes bar-rise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+@utility bar-rise {
+  transform-origin: bottom;
+  animation: bar-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* A figure that has just changed is worth a beat of attention. */
 @keyframes count-in {
   from { opacity: 0; transform: translateY(4px) scale(0.98); }
@@ -188,5 +256,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .screen,
+  .bar-rise,
   .count-in { animation: none; }
 }
