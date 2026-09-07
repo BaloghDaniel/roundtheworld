@@ -1,61 +1,72 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------- palette
-   White in light, black in dark, and one loud accent that carries every
-   action. Route colours stay green for covered and amber for remaining --
-   they mean progress, not brand, so they must not shift with the theme. */
+   Five colours: acid lime, near-black teal, and three warm greys. Off-white
+   in light, the deep teal in dark, and the lime carrying every action.
+
+   The lime is a *fill*, never body text: at 88% luminance it is unreadable on
+   anything pale. `accent-ink` is the text-safe form of the same colour — the
+   lime itself against the dark ground, a dark olive against the light one. */
 
 :root {
-  --c-canvas: #ffffff;
+  --c-canvas: #e9ebe6;
   --c-surface: #ffffff;
-  --c-raised: #f4f4f5;
-  --c-ink: #09090b;
-  --c-muted: #71717a;
-  --c-hair: rgb(9 9 11 / 0.12);
-  --c-accent: #ff2d55;
-  --c-on-accent: #ffffff;
-  --c-danger: #b91c1c;
-  --c-done: #16a34a;
-  --c-ahead: #f59e0b;
-  --shadow-card: 0 1px 2px rgb(9 9 11 / 0.08), 0 10px 30px rgb(9 9 11 / 0.14);
-  --glass-alpha: 0.88;
+  --c-raised: #e4e6e0;
+  --c-ink: #061414;
+  /* #96998c reads at 2.9:1 on white, so light mode uses the same hue darkened
+     to a legible 5:1 and keeps the given grey for borders and tracks. */
+  --c-muted: #6b6e62;
+  --c-hair: #d2d3ce;
+  --c-accent: #bcff00;
+  --c-on-accent: #061414;
+  --c-accent-ink: #3f5b00;
+  --c-danger: #a51c14;
+  --c-done: #bcff00;
+  --c-ahead: #96998c;
+  --shadow-card: 0 1px 2px rgb(6 20 20 / 0.05), 0 10px 30px rgb(6 20 20 / 0.09);
+  --shadow-lift: 0 2px 6px rgb(6 20 20 / 0.08), 0 18px 44px rgb(6 20 20 / 0.14);
+  --glass-alpha: 0.86;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --c-canvas: #000000;
-    --c-surface: #0b0b0c;
-    --c-raised: #18181b;
-    --c-ink: #fafafa;
-    --c-muted: #a1a1aa;
-    --c-hair: rgb(255 255 255 / 0.14);
-    --c-accent: #ff375f;
-    --c-on-accent: #ffffff;
-    --c-danger: #fca5a5;
-    --c-done: #22c55e;
-    --c-ahead: #fbbf24;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.6), 0 10px 30px rgb(0 0 0 / 0.5);
-    --glass-alpha: 0.8;
+    --c-canvas: #061414;
+    --c-surface: #0b1e1e;
+    --c-raised: #122626;
+    --c-ink: #e9ebe6;
+    --c-muted: #96998c;
+    --c-hair: rgb(150 153 140 / 0.22);
+    --c-accent: #bcff00;
+    --c-on-accent: #061414;
+    --c-accent-ink: #bcff00;
+    --c-danger: #ff8a80;
+    --c-done: #bcff00;
+    --c-ahead: #96998c;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.45);
+    --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.55), 0 18px 44px rgb(0 0 0 / 0.55);
+    --glass-alpha: 0.78;
     color-scheme: dark;
   }
 }
 
 /* An explicit choice always wins over the system setting. */
 :root[data-theme='dark'] {
-  --c-canvas: #000000;
-  --c-surface: #0b0b0c;
-  --c-raised: #18181b;
-  --c-ink: #fafafa;
-  --c-muted: #a1a1aa;
-  --c-hair: rgb(255 255 255 / 0.14);
-  --c-accent: #ff375f;
-  --c-on-accent: #ffffff;
-  --c-danger: #fca5a5;
-  --c-done: #22c55e;
-  --c-ahead: #fbbf24;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.6), 0 10px 30px rgb(0 0 0 / 0.5);
-  --glass-alpha: 0.8;
+  --c-canvas: #061414;
+  --c-surface: #0b1e1e;
+  --c-raised: #122626;
+  --c-ink: #e9ebe6;
+  --c-muted: #96998c;
+  --c-hair: rgb(150 153 140 / 0.22);
+  --c-accent: #bcff00;
+  --c-on-accent: #061414;
+  --c-accent-ink: #bcff00;
+  --c-danger: #ff8a80;
+  --c-done: #bcff00;
+  --c-ahead: #96998c;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.45);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.55), 0 18px 44px rgb(0 0 0 / 0.55);
+  --glass-alpha: 0.78;
   color-scheme: dark;
 }
 
@@ -68,6 +79,7 @@
   --color-hair: var(--c-hair);
   --color-accent: var(--c-accent);
   --color-on-accent: var(--c-on-accent);
+  --color-accent-ink: var(--c-accent-ink);
   --color-danger: var(--c-danger);
   --color-done: var(--c-done);
   --color-ahead: var(--c-ahead);
@@ -87,7 +99,23 @@ body {
   background: var(--c-surface);
   border: 1px solid var(--c-hair);
   box-shadow: var(--shadow-card);
-  @apply rounded-2xl;
+  @apply rounded-3xl;
+}
+
+/** The one panel on a screen that should draw the eye first. */
+@utility card-hero {
+  background: var(--c-surface);
+  border: 1px solid var(--c-hair);
+  box-shadow: var(--shadow-lift);
+  @apply rounded-[1.75rem];
+}
+
+/** Inverted: the lime ground, for the single loudest figure on a screen. */
+@utility card-accent {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+  box-shadow: var(--shadow-lift);
+  @apply rounded-[1.75rem];
 }
 
 @utility glass {
@@ -112,8 +140,8 @@ body {
   background: var(--c-accent);
   color: var(--c-on-accent);
   @apply rounded-full px-5 py-3 text-sm font-extrabold uppercase tracking-wide
-    transition active:scale-[0.98] hover:brightness-110
-    disabled:pointer-events-none disabled:opacity-50;
+    transition active:scale-[0.98] hover:brightness-105
+    disabled:pointer-events-none disabled:bg-raised disabled:text-muted;
 }
 
 @utility btn-quiet {
@@ -124,10 +152,16 @@ body {
     disabled:pointer-events-none disabled:opacity-50;
 }
 
+/** A small status pill: earned badge, lap counter, mode label. */
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px]
+    font-bold uppercase tracking-wider;
+}
+
 @utility field {
   background: var(--c-raised);
   border: 1px solid transparent;
-  @apply w-full rounded-xl px-4 py-3 text-sm text-ink outline-none
+  @apply w-full rounded-2xl px-4 py-3 text-sm text-ink outline-none
     transition placeholder:text-muted focus:border-accent;
 }
 
@@ -142,6 +176,17 @@ body {
   animation: rise 0.22s ease-out both;
 }
 
+/* A figure that has just changed is worth a beat of attention. */
+@keyframes count-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@utility count-in {
+  animation: count-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .screen { animation: none; }
+  .screen,
+  .count-in { animation: none; }
 }

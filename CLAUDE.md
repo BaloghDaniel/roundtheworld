@@ -60,6 +60,11 @@ the names.
   the `admin-users` function. Only the service role can set it: `UPDATE` on
   `profiles` is granted per column, deliberately excluding `is_admin` and `id`.
 
+`my_stats()` is the home screen's single round trip: totals, this week against
+last, the day streak, eight zero-filled weeks and the five most recent
+activities. It runs on every app open, which is why it is one function rather
+than five queries.
+
 RPCs are the API surface; the client rarely touches tables directly. Definer
 functions are used where a policy alone cannot express the rule, and each one
 reads `auth.uid()` itself rather than taking a user id — an earlier version
@@ -122,11 +127,23 @@ reintroduce the bug.
 - **Deleting a user releases their Strava authorisation first.** Dropping our
   token row alone leaves the athlete counted against the application's
   connected-athlete limit, which is scarce on a ten-athlete tier.
-- **Colour carries meaning.** Green is covered, amber is remaining, the accent
-  is for actions, `danger` is for errors. A progress bar's filled portion is
-  covered distance, so it is green. Brand colours (Strava orange, the Google
+- **Colour carries meaning, and the lime is a fill.** `#bcff00` is covered
+  distance and every action; `#96998c` is what is left; `danger` is for errors.
+  At 88% luminance the lime is a 14:1 headline on the dark ground and invisible
+  on the pale one, so text and icons use `accent-ink` (the lime in dark, a dark
+  olive in light) and only *fills* use `accent`. A progress track is
+  `bg-ahead/25`, never `bg-raised` — raised is a whisker from the card behind
+  it and an empty bar disappears. Brand colours (Strava orange, the Google
   button) keep fixed foregrounds — a theme token makes their labels vanish in
   one mode.
+- **The map casing opposes the basemap.** A dark halo under the route on the
+  pale map, a light one on the dark map. Matching the basemap instead makes the
+  whole route disappear, which is exactly what a "dark casing in both themes"
+  simplification did.
+- **Achievements are derived, never stored.** `badgesFor()` is a pure function
+  of `my_stats()` plus the journey list, so there is no table to keep in step,
+  no way to hold a badge the distance no longer supports, and a badge lights up
+  the moment a sync lands rather than when a job notices.
 
 ## Third-party limits worth remembering
 
@@ -189,7 +206,9 @@ because they were reasoned about rather than run.
 
 Done: PWA shell and Pages pipeline · Google auth · Strava connect and sync ·
 the 64,381 km world route · journey map and progress · city-to-city goals ·
-multiple journeys · profiles, avatars and friends · Tag Along.
+multiple journeys · profiles, avatars and friends · Tag Along · the lime
+redesign, a gamified home screen (`my_stats()`, streak, eight-week chart,
+derived badges) and a preview route for every screen in `MapCheck.tsx`.
 
 Next, in the order discussed: **Race** (first to the destination) and
 **Scramble** (combined distance, golf-scramble style) — both already in the

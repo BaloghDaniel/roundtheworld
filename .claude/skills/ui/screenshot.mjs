@@ -1,6 +1,10 @@
 // Screenshot a page by driving headless Chrome over CDP.
 //
-//   node .claude/skills/ui/screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark]
+//   node .claude/skills/ui/screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark] [clickSelector]
+//
+// clickSelector clicks one element before the shot, which is the only way to
+// reach a screen's selected, expanded or error states -- the ones most likely
+// to be broken, because nobody looks at them.
 //
 // Chrome's own --screenshot flag needs --virtual-time-budget, which advances
 // time so fast that real network requests never finish: map tiles and fonts
@@ -10,10 +14,12 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 
-const [url, out, width = '430', height = '930', waitMs = '9000', scheme] =
+const [url, out, width = '430', height = '930', waitMs = '9000', scheme, clickSel] =
   process.argv.slice(2)
 if (!url || !out) {
-  console.error('usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark]')
+  console.error(
+    'usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark] [clickSelector]',
+  )
   process.exit(1)
 }
 
@@ -96,28 +102,45 @@ if (scheme) {
 await send('Page.navigate', { url })
 await sleep(Number(waitMs))
 
+if (clickSel) {
+  const hit = await send('Runtime.evaluate', {
+    expression: `(() => { const el = document.querySelector(${JSON.stringify(clickSel)});
+      if (!el) return 'not found'; el.click(); return 'clicked'; })()`,
+    returnByValue: true,
+  })
+  console.log(`click ${clickSel}: ${hit.result.value}`)
+  await sleep(1200)
+}
+
 // Anything wider than the viewport is a layout bug worth seeing in numbers.
 //
 // Map markers and controls are excluded: a pin for a city beyond the current
 // view is correctly off-screen, and reporting those would bury real clipping
 // in noise.
 const probe = await send('Runtime.evaluate', {
-  expression: `JSON.stringify({
+  expression: `(() => {
+  // A page taller than the viewport is a feed, not a bug, so vertical
+  // overflow only counts on a screen that does not scroll -- which is where
+  // it means a card has run off the bottom.
+  const scrolls = document.documentElement.scrollHeight > window.innerHeight + 1
+  return JSON.stringify({
     overflowX: document.documentElement.scrollWidth > window.innerWidth
       ? document.documentElement.scrollWidth + ' > ' + window.innerWidth : 'none',
+    pageHeight: document.documentElement.scrollHeight + (scrolls ? ' (scrolls)' : ''),
     clipped: [...document.querySelectorAll('body *')]
       .filter(el => !el.closest('.maplibregl-marker, .maplibregl-control-container, canvas'))
       .filter(el => { const r = el.getBoundingClientRect()
         return r.width > 0 && r.height > 0 &&
                (r.right > window.innerWidth + 1 || r.left < -1 ||
-                r.bottom > window.innerHeight + 1) })
+                (!scrolls && r.bottom > window.innerHeight + 1)) })
       .slice(0, 6)
       .map(el => {
         const cls = typeof el.className === 'string' ? el.className.split(' ')[0] : ''
         const r = el.getBoundingClientRect()
         return \`\${el.tagName.toLowerCase()}\${cls ? '.' + cls : ''} @\${Math.round(r.left)},\${Math.round(r.top)} \${Math.round(r.width)}x\${Math.round(r.height)}\`
       }),
-  })`,
+  })
+})()`,
   returnByValue: true,
 })
 

@@ -1,14 +1,29 @@
 import { useEffect, useState } from 'react'
+import Avatar from '../components/Avatar'
 import PlaceSearch from '../components/PlaceSearch'
 import { createGoalRoute, placeFromCoords, startRouteJourney, type Place } from '../lib/goals'
 import { currentPosition, startJourney } from '../lib/journey'
-import Avatar from '../components/Avatar'
 import { fetchFriends, startGroupJourney, type Friend } from '../lib/social'
 
 type Props = { onStarted: (journeyId?: string) => void; onCancel?: () => void }
 type Kind = 'world' | 'goal'
 
 const today = new Date().toISOString().slice(0, 10)
+
+const KINDS: { id: Kind; title: string; hint: string; icon: string }[] = [
+  {
+    id: 'world',
+    title: 'Around the world',
+    hint: '64 381 km · a loop',
+    icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM2 12h20M12 2c2.7 3 4 6.3 4 10s-1.3 7-4 10c-2.7-3-4-6.3-4-10s1.3-7 4-10Z',
+  },
+  {
+    id: 'goal',
+    title: 'City to city',
+    hint: 'Pick a destination',
+    icon: 'M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  },
+]
 
 export default function Onboarding({ onStarted, onCancel }: Props) {
   const [kind, setKind] = useState<Kind | null>(null)
@@ -76,57 +91,66 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
     }
   }
 
+  const ready = !!kind && !busy && !locating && (kind === 'world' || (!!goal && !!startPlace))
+
   return (
-    <main className="screen mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-7 px-6 py-16">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">
-          {onCancel ? 'Start a new journey' : 'Start a journey'}
+    <main className="screen mx-auto flex min-h-dvh max-w-md flex-col gap-6 px-5 py-8">
+      <div className="space-y-2.5">
+        <div className="eyebrow">Step one</div>
+        <h1 className="text-[1.75rem] font-extrabold leading-tight tracking-tighter text-ink">
+          {onCancel ? 'Start a new journey' : 'Where are you going?'}
         </h1>
         <p className="text-pretty text-sm leading-relaxed text-muted">
           Your runs and rides are laid end to end along real roads. You never
           have to run the route itself — the distance is what counts.
-          {onCancel && ' Starting a new journey replaces your current one.'}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {(
-          [
-            ['world', 'Around the world', '64,381 km'],
-            ['goal', 'City to city', 'Pick a target'],
-          ] as const
-        ).map(([id, title, hint]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setKind(id)}
-            aria-pressed={kind === id}
-            className={`rounded-xl border px-3 py-3 text-left transition ${
-              kind === id
-                ? 'border-accent bg-accent/10'
-                : 'border-hair bg-raised hover:bg-raised'
-            }`}
-          >
-            <div className="text-sm font-medium text-ink">{title}</div>
-            <div className="text-xs text-muted">{hint}</div>
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-3">
+        {KINDS.map((k) => {
+          const on = kind === k.id
+          return (
+            <button
+              key={k.id}
+              type="button"
+              onClick={() => setKind(k.id)}
+              aria-pressed={on}
+              className={`rounded-3xl border p-4 text-left transition active:scale-[0.99] ${
+                on
+                  ? 'border-accent bg-accent/15'
+                  : 'border-hair bg-surface hover:border-muted'
+              }`}
+            >
+              <span
+                className={`mb-3 grid size-9 place-items-center rounded-full ${
+                  on ? 'bg-accent text-on-accent' : 'bg-raised text-muted'
+                }`}
+              >
+                <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d={k.icon} />
+                </svg>
+              </span>
+              <div className="text-sm font-bold tracking-tight text-ink">{k.title}</div>
+              <div className="mt-0.5 text-[11px] text-muted">{k.hint}</div>
+            </button>
+          )
+        })}
       </div>
 
       {kind && (
-      <PlaceSearch
-        label="Starting from"
-        value={origin}
-        onChange={setOrigin}
-        placeholder="Search for a place"
-        emptyHint={
-          locating
-            ? 'Finding your location…'
-            : here
-              ? `Using your current position (${here.lat.toFixed(2)}, ${here.lon.toFixed(2)}). Search to pick somewhere else.`
-              : 'Location unavailable — search for your starting point.'
-        }
-      />
+        <PlaceSearch
+          label="Starting from"
+          value={origin}
+          onChange={setOrigin}
+          placeholder="Search for a place"
+          emptyHint={
+            locating
+              ? 'Finding your location…'
+              : here
+                ? `Using your current position (${here.lat.toFixed(2)}, ${here.lon.toFixed(2)}). Search to pick somewhere else.`
+                : 'Location unavailable — search for your starting point.'
+          }
+        />
       )}
 
       {kind === 'goal' && (
@@ -138,26 +162,28 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
         />
       )}
 
+      {/* A group counts from its own start date, so once anyone is invited
+          there is no date left to choose. */}
       {kind && invited.size === 0 && (
-      <label className="block space-y-2">
-        <span className="text-sm font-medium text-ink">Count activities from</span>
-        <input
-          type="date"
-          value={from}
-          max={today}
-          onChange={(e) => setFrom(e.target.value)}
-          className="w-full rounded-xl border border-hair bg-raised px-4 py-3 text-sm text-ink [color-scheme:dark]"
-        />
-        <span className="block text-xs text-muted">
-          Everything you logged on or after this date counts. Backdate it to
-          bring in runs you have already done.
-        </span>
-      </label>
+        <label className="block space-y-2">
+          <span className="text-sm font-semibold text-ink">Count activities from</span>
+          <input
+            type="date"
+            value={from}
+            max={today}
+            onChange={(e) => setFrom(e.target.value)}
+            className="field"
+          />
+          <span className="block text-xs leading-relaxed text-muted">
+            Everything you logged on or after this date counts. Backdate it to
+            bring in runs you have already done.
+          </span>
+        </label>
       )}
 
       {kind === 'goal' && friends.length > 0 && (
-        <div className="space-y-2">
-          <span className="text-sm font-medium text-ink">Tag along</span>
+        <div className="space-y-2.5">
+          <span className="text-sm font-semibold text-ink">Tag along</span>
           <ul className="space-y-2">
             {friends.map((f) => {
               const on = invited.has(f.id)
@@ -174,21 +200,25 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
                       })
                     }
                     aria-pressed={on}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
-                      on ? 'border-accent bg-accent/10' : 'border-hair bg-raised hover:bg-raised'
+                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition ${
+                      on ? 'border-accent bg-accent/15' : 'border-hair bg-surface hover:bg-raised'
                     }`}
                   >
-                    <Avatar name={f.display_name} url={f.avatar_url} size={32} />
-                    <span className="min-w-0 flex-1 truncate text-sm text-ink">
+                    <Avatar name={f.display_name} url={f.avatar_url} size={34} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
                       {f.display_name}
                     </span>
-                    <span className="text-xs text-muted">{on ? 'Invited' : 'Invite'}</span>
+                    <span
+                      className={`chip ${on ? 'bg-accent text-on-accent' : 'bg-raised text-muted'}`}
+                    >
+                      {on ? 'Invited' : 'Invite'}
+                    </span>
                   </button>
                 </li>
               )
             })}
           </ul>
-          <p className="text-xs text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             You each run the whole distance, counting from today so nobody
             starts ahead. If one of you falls more than 100 km behind, the
             runner in front waits until the party closes up.
@@ -197,42 +227,44 @@ export default function Onboarding({ onStarted, onCancel }: Props) {
       )}
 
       {kind === 'world' && (
-        <p className="text-xs text-muted">
+        <p className="text-xs leading-relaxed text-muted">
           The world route is a loop, so your starting point rotates it. You will
           be placed at the nearest point on the road.
         </p>
       )}
 
       {error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="card px-4 py-3 text-sm text-danger">
           {error}
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={() => void begin()}
-        disabled={!kind || !!busy || locating || (kind === 'goal' && (!goal || !startPlace))}
-        className="w-full rounded-2xl btn-accent w-full transition hover:brightness-110 disabled:opacity-60"
-      >
-        {busy ?? (kind ? 'Begin' : 'Choose a journey')}
-      </button>
+      <div className="space-y-3 pt-1">
+        {kind === 'goal' && goal && startPlace && !busy && (
+          <p className="text-center text-xs font-semibold text-muted">
+            {startPlace.name} → {goal.name}
+          </p>
+        )}
 
-      {onCancel && (
         <button
           type="button"
-          onClick={onCancel}
-          className="text-center text-xs text-muted underline underline-offset-2 hover:text-ink"
+          onClick={() => void begin()}
+          disabled={!ready}
+          className="btn-accent w-full py-3.5"
         >
-          Keep my current journey
+          {busy ?? (kind ? 'Begin' : 'Choose a journey')}
         </button>
-      )}
 
-      {kind === 'goal' && goal && startPlace && !busy && (
-        <p className="text-center text-xs text-muted">
-          {startPlace.name} → {goal.name}
-        </p>
-      )}
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="block w-full text-center text-xs text-muted underline underline-offset-4 transition hover:text-ink"
+          >
+            Keep my current journeys
+          </button>
+        )}
+      </div>
     </main>
   )
 }

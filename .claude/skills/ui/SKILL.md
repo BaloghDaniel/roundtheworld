@@ -29,14 +29,23 @@ a screenshot and invisible in the source.
 5. Screenshot it at phone and desktop widths and **actually read the images**:
 
    ```sh
-   node .claude/skills/ui/screenshot.mjs "http://localhost:8901/roundtheworld/?mapcheck=ui" /tmp/ui-phone.png 430 930
-   node .claude/skills/ui/screenshot.mjs "http://localhost:8901/roundtheworld/?mapcheck=ui" /tmp/ui-wide.png 1280 900
+   # url out width height waitMs light|dark [clickSelector]
+   node .claude/skills/ui/screenshot.mjs "http://localhost:8901/roundtheworld/?mapcheck=home" /tmp/ui-phone.png 430 1400 5000 dark
+   node .claude/skills/ui/screenshot.mjs "http://localhost:8901/roundtheworld/?mapcheck=home" /tmp/ui-wide.png 1280 1400 5000 light
    ```
 
-   **Check both themes.** The app is white in light and black in dark, so a
-   change verified in one can be invisible or unreadable in the other. Emulate
-   the scheme over CDP with
-   `Emulation.setEmulatedMedia {features:[{name:'prefers-color-scheme',value:'light'|'dark'}]}`.
+   **Check both themes** — the sixth argument forces one. Off-white in light,
+   deep teal in dark, and a lime that is legible on one ground and invisible on
+   the other, so a change verified in one theme is not verified.
+
+   The seventh argument clicks a selector before the shot, which is how the
+   selected, expanded and error states get looked at — the ones most likely to
+   be broken, because nobody looks at them:
+
+   ```sh
+   node .claude/skills/ui/screenshot.mjs "…?mapcheck=new" /tmp/goal.png 430 1100 4000 dark \
+     'button[aria-pressed]+button[aria-pressed]'
+   ```
 
    **Screens behind a session** can be photographed by injecting one: create a
    throwaway user with the secret key, sign in for a session object, and set
@@ -63,7 +72,12 @@ fixture instead:
 
 - `?mapcheck` — map diagnostics: element sizes, canvas dimensions, whether
   MapLibre's stylesheet applied, WebGL availability.
+- `?mapcheck=home` — the home screen (`&empty=1` for the first-run state).
 - `?mapcheck=ui` — the real journey screen with a fixture journey.
+- `?mapcheck=profile` · `=signin` · `=connect` · `=new` · `=friends`.
+
+A screen reached this way takes its data through an optional `preview` prop,
+never set by the app itself, so the fixture cannot leak into production.
 
 If you are changing a screen with no preview route, add one to `MapCheck.tsx`
 before starting. A screen you cannot photograph is a screen you cannot check.
@@ -92,8 +106,10 @@ before starting. A screen you cannot photograph is a screen you cannot check.
   absolute positioning, or give the parent a definite height.
 - **The map is the page.** Cards float over it with the `glass` utility. Do not
   reintroduce borders around the map or panels that push it into a box.
-- **Colour carries meaning.** Green is distance covered, amber is distance
-  still to go, the accent is for actions, and `danger` is for errors. A
-  progress bar's filled portion is covered distance, so it is green.
+- **Colour carries meaning.** The lime is distance covered and every action;
+  the warm grey is distance still to go; `danger` is for errors. A progress
+  bar's filled portion is covered distance, so it is the lime.
+- **`text-accent` on a pale card is invisible.** The lime is a fill. Text and
+  icons that want to be accent-coloured use `text-accent-ink`.
 - **Brand colours are not themeable.** Strava orange and the Google button keep
   fixed foregrounds; a theme token makes their labels vanish in one mode.

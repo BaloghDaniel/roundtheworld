@@ -35,14 +35,18 @@ const STYLES: Record<'light' | 'dark', string> = {
 // copies the file into public/ on every build.
 setWorkerUrl(`${import.meta.env.BASE_URL}maplibre/maplibre-gl-worker.mjs`)
 
-// Amber rather than a pure yellow, which disappears against a pale basemap.
-const AHEAD = '#eab308'
-const DONE = '#16a34a'
-// A casing separates the route from the terrain, so it has to contrast with
-// the basemap rather than being a fixed colour.
+// Covered distance is the accent lime; what is left is the neutral grey. The
+// two are the only colours on the map that carry meaning, so neither may
+// change with the theme -- a route that recolours itself when the basemap
+// flips stops being readable as progress.
+const AHEAD = '#96998c'
+const DONE = '#bcff00'
+// A casing separates the route from the terrain, so it has to oppose the
+// basemap: a dark halo under the line on the pale map, a light one on the
+// dark map. Matching the basemap instead makes the whole route disappear.
 const CASING: Record<'light' | 'dark', string> = {
-  light: 'rgba(255,255,255,.85)',
-  dark: 'rgba(0,0,0,.65)',
+  light: 'rgba(6,20,20,.55)',
+  dark: 'rgba(233,235,230,.32)',
 }
 
 // Zoom levels to step in from the whole-route framing on first load.
@@ -162,7 +166,7 @@ export default function JourneyMap({ journey, focus, party, selfId }: Props) {
         type: 'line',
         source,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': CASING[resolved], 'line-width': 6 },
+        paint: { 'line-color': CASING[resolved], 'line-width': 6.5 },
       })
     }
 
@@ -174,14 +178,14 @@ export default function JourneyMap({ journey, focus, party, selfId }: Props) {
       type: 'line',
       source: 'ahead',
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': AHEAD, 'line-width': 3 },
+      paint: { 'line-color': AHEAD, 'line-width': 3.5 },
       filter: ['==', ['get', 'mode'], 'road'],
     })
     m.addLayer({
       id: 'ahead-sea',
       type: 'line',
       source: 'ahead',
-      paint: { 'line-color': AHEAD, 'line-width': 3, 'line-dasharray': dash },
+      paint: { 'line-color': AHEAD, 'line-width': 3.5, 'line-dasharray': dash },
       filter: ['!=', ['get', 'mode'], 'road'],
     })
     m.addLayer({
@@ -201,7 +205,7 @@ export default function JourneyMap({ journey, focus, party, selfId }: Props) {
     })
 
     for (const l of data.landmarks) {
-      new Marker({ color: '#64748b', scale: 0.42 })
+      new Marker({ color: '#96998c', scale: 0.42 })
         .setLngLat(l.at)
         .setPopup(new Popup({ offset: 12 }).setText(`${l.name}, ${l.country}`))
         .addTo(m)

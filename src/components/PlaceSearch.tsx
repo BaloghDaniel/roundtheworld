@@ -45,7 +45,7 @@ export default function PlaceSearch({ label, value, onChange, placeholder, empty
     return (
       <div className="space-y-2">
         <span className="text-sm font-medium text-ink">{label}</span>
-        <div className="flex items-center gap-3 rounded-xl border border-hair bg-raised px-4 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-hair bg-raised px-4 py-3">
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm text-ink">{value.name}</div>
             {value.label && value.label !== value.name && (

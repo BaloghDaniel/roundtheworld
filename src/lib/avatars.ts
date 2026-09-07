@@ -26,8 +26,8 @@ const FIGURES: Record<AvatarId, string> = { runner: RUNNER }
 /**
  * A runner on the map: their avatar if they have one, otherwise the figure.
  *
- * Waiting runners are ringed amber rather than moved, because in Tag Along
- * they are still there -- just held until the party closes up.
+ * A waiting runner goes grey rather than moving, because in Tag Along they are
+ * still there -- just held until the party closes up.
  */
 export function runnerMarker(opts: {
   avatarUrl?: string | null
@@ -37,15 +37,16 @@ export function runnerMarker(opts: {
   size?: number
 }): HTMLElement {
   const size = opts.size ?? 38
-  const ring = opts.waiting ? '#fbbf24' : opts.self ? '#ffffff' : '#94a3b8'
+  const body = opts.waiting ? '#96998c' : '#bcff00'
+  const ring = opts.self ? '#061414' : '#ffffff'
 
   const el = document.createElement('div')
   el.setAttribute('aria-label', opts.name ?? 'Runner')
   el.title = opts.name ?? ''
   el.style.cssText = `
     width:${size}px;height:${size}px;border-radius:9999px;
-    background:#15803d;border:3px solid ${ring};
-    box-shadow:0 2px 6px rgba(0,0,0,.5);
+    background:${body};border:3px solid ${ring};
+    box-shadow:0 2px 6px rgba(6,20,20,.5);
     display:grid;place-items:center;overflow:hidden;cursor:default;
   `
 
@@ -58,34 +59,11 @@ export function runnerMarker(opts: {
   } else {
     el.innerHTML = `
       <svg viewBox="0 0 24 24" width="${size * 0.66}" height="${size * 0.66}"
-           fill="none" stroke="#fff" stroke-width="2.1"
+           fill="none" stroke="#061414" stroke-width="2.1"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         ${FIGURES[DEFAULT_AVATAR]}
       </svg>
     `
   }
-  return el
-}
-
-/**
- * Map marker element: the figure in a coloured badge, ringed in white so it
- * stays visible against both the pale basemap and the route lines.
- */
-export function avatarMarker(id: AvatarId = DEFAULT_AVATAR, size = 38): HTMLElement {
-  const el = document.createElement('div')
-  el.setAttribute('aria-label', 'Your position')
-  el.style.cssText = `
-    width:${size}px;height:${size}px;border-radius:9999px;
-    background:#15803d;border:3px solid #fff;
-    box-shadow:0 2px 6px rgba(0,0,0,.45);
-    display:grid;place-items:center;cursor:default;
-  `
-  el.innerHTML = `
-    <svg viewBox="0 0 24 24" width="${size * 0.66}" height="${size * 0.66}"
-         fill="none" stroke="#fff" stroke-width="2.1"
-         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      ${FIGURES[id]}
-    </svg>
-  `
   return el
 }

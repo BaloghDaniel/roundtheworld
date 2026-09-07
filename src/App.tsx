@@ -5,7 +5,7 @@ import { fetchStravaStatus, type StravaStatus } from './lib/strava'
 import ConnectStrava from './routes/ConnectStrava'
 import FindFriends from './routes/FindFriends'
 import JourneyScreen from './routes/Journey'
-import Journeys from './routes/Journeys'
+import Home from './routes/Home'
 import MapCheck from './routes/MapCheck'
 import Onboarding from './routes/Onboarding'
 import Profile from './routes/Profile'
@@ -115,7 +115,7 @@ export default function App() {
   }
 
   return (
-    <Journeys
+    <Home
       onOpen={(id) => void openJourney(id)}
       onNew={() => setView({ name: 'new' })}
       onProfile={() => setView({ name: 'profile' })}

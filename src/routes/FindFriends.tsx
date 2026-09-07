@@ -64,13 +64,13 @@ export default function FindFriends({ onBack }: { onBack: () => void }) {
           type="button"
           onClick={onBack}
           aria-label="Back"
-          className="card grid size-9 place-items-center text-ink transition hover:bg-raised"
+          className="card grid size-10 place-items-center text-ink transition hover:bg-raised"
         >
           <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M15 18 9 12l6-6" />
           </svg>
         </button>
-        <h1 className="font-semibold tracking-tight text-ink">Find friends</h1>
+        <h1 className="font-bold tracking-tight text-ink">Find friends</h1>
       </header>
 
       <input
@@ -79,7 +79,7 @@ export default function FindFriends({ onBack }: { onBack: () => void }) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by name or @handle"
         autoComplete="off"
-        className="w-full rounded-2xl border border-hair bg-raised px-4 py-3 text-sm text-ink placeholder:text-muted"
+        className="field"
       />
 
       {error && (
@@ -90,9 +90,20 @@ export default function FindFriends({ onBack }: { onBack: () => void }) {
       {busy && <p className="px-1 text-xs text-muted">Searching…</p>}
 
       {!busy && query.trim().length >= 2 && results.length === 0 && (
-        <p className="card px-4 py-5 text-center text-sm text-muted">
+        <p className="card px-4 py-6 text-center text-sm text-muted">
           Nobody matching “{query}”.
         </p>
+      )}
+
+      {query.trim().length < 2 && (
+        <div className="card space-y-2 px-5 py-8 text-center">
+          <p className="font-bold tracking-tight text-ink">Run with someone</p>
+          <p className="text-pretty text-sm leading-relaxed text-muted">
+            Search for a friend by name or handle. Once you are friends you can
+            invite them to tag along on a journey, and neither of you gets left
+            more than 100 km behind.
+          </p>
+        </div>
       )}
 
       <ul className="space-y-2">
@@ -110,10 +121,10 @@ export default function FindFriends({ onBack }: { onBack: () => void }) {
                 type="button"
                 onClick={() => void add(user)}
                 disabled={done}
-                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-bold transition ${
                   done
                     ? 'text-muted'
-                    : 'bg-accent text-ink hover:brightness-110'
+                    : 'bg-accent text-on-accent hover:brightness-105'
                 }`}
               >
                 {text}
@@ -123,7 +134,7 @@ export default function FindFriends({ onBack }: { onBack: () => void }) {
         })}
       </ul>
 
-      <p className="px-1 text-[11px] text-muted">
+      <p className="px-1 text-[11px] leading-relaxed text-muted">
         People are found by name or handle. Email addresses are never searchable.
       </p>
     </main>

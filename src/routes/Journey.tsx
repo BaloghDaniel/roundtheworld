@@ -123,7 +123,7 @@ export default function JourneyScreen({
             type="button"
             onClick={() => void sync()}
             disabled={busy || !strava?.connected}
-            className="glass shrink-0 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wide text-accent transition hover:bg-raised disabled:opacity-50"
+            className="glass shrink-0 px-3.5 py-2.5 text-xs font-bold uppercase tracking-wide text-accent-ink transition hover:bg-raised disabled:opacity-50"
           >
             {busy ? '…' : 'Sync'}
           </button>
@@ -151,7 +151,7 @@ export default function JourneyScreen({
           {/* Stats card */}
           <section className="glass space-y-4 px-4 py-4">
             {journey.completed && (
-              <p className="rounded-xl bg-done/15 px-3 py-2 text-sm text-done">
+              <p className="rounded-2xl bg-accent/20 px-3.5 py-2.5 text-sm text-accent-ink">
                 <span className="font-bold">You made it.</span>{' '}
                 {journey.destination_name
                   ? `${journey.destination_name} reached in ${formatKm(journey.total_distance_m)}.`
@@ -169,23 +169,21 @@ export default function JourneyScreen({
                 </div>
                 <div className="text-right">
                   {journey.laps > 0 && (
-                    <span className="mr-2 rounded bg-ahead/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ahead">
-                      Lap {journey.laps + 1}
-                    </span>
+                    <span className="chip mr-2 bg-accent text-on-accent">Lap {journey.laps + 1}</span>
                   )}
-                  <span className="readout text-xl text-accent">{pct.toFixed(1)}%</span>
+                  <span className="readout text-xl text-accent-ink">{pct.toFixed(1)}%</span>
                 </div>
               </div>
 
               <div
-                className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-raised"
+                className="mt-2.5 h-2 overflow-hidden rounded-full bg-ahead/25"
                 role="progressbar"
                 aria-valuenow={Math.round(pct)}
                 aria-valuemin={0}
                 aria-valuemax={100}
               >
                 <div
-                  className="h-full rounded-full bg-done transition-[width] duration-700"
+                  className="h-full rounded-full bg-accent transition-[width] duration-700"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -247,9 +245,7 @@ export default function JourneyScreen({
                         )}
                       </span>
                       {r.waiting && (
-                        <span className="rounded bg-ahead/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ahead">
-                          Waiting
-                        </span>
+                        <span className="chip bg-ahead/30 text-ink">Waiting</span>
                       )}
                       <span className="readout text-sm">{formatKm(r.effective_m)}</span>
                     </li>
@@ -267,7 +263,7 @@ export default function JourneyScreen({
             )}
 
             {journey.segment && journey.segment.mode !== 'road' && (
-              <p className="rounded-xl bg-raised px-3 py-2 text-[11px] text-muted">
+              <p className="rounded-2xl bg-raised px-3.5 py-2.5 text-[11px] text-muted">
                 <span className="font-semibold text-ink">At sea.</span>{' '}
                 {journey.segment.reason}
               </p>

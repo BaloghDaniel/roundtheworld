@@ -64,7 +64,7 @@ export default function AdminUsers() {
                       {user.display_name}
                     </span>
                     {user.is_admin && (
-                      <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent">
+                      <span className="chip bg-accent text-on-accent">
                         Admin
                       </span>
                     )}
@@ -84,9 +84,9 @@ export default function AdminUsers() {
                       confirming === user.id ? void remove(user) : setConfirming(user.id)
                     }
                     disabled={busy === user.id}
-                    className={`shrink-0 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition ${
+                    className={`shrink-0 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition ${
                       confirming === user.id
-                        ? 'bg-danger text-white'
+                        ? 'bg-danger text-canvas'
                         : 'text-muted hover:text-danger'
                     }`}
                   >
