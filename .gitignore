@@ -34,3 +34,21 @@ dev-dist
 
 # Copied from node_modules by prebuild; not source.
 public/maplibre
+
+# Agent skills installed by `npx skills add ghaida/intent --all` and
+# `npx impeccable install`. 43 MB, mostly three duplicate harness copies of a
+# darwin-arm64 binary that a Linux CI runner could not execute anyway, and all
+# of it reproducible from those two commands. The project's own ui skill is
+# tracked, because it is the one that knows this app's traps.
+.agents/
+.codex/
+agent/
+data/skills/
+skills-lock.json
+.claude/agents/
+.claude/settings.local.json
+.claude/skills/*
+!.claude/skills/ui/
+.github/skills/
+.github/agents/
+.github/hooks/

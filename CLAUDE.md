@@ -180,6 +180,29 @@ re-request the stages that already worked. Seeding **updates in place**: a
 delete would be refused by the foreign key from `journeys`, correctly, since it
 would otherwise move everyone who had started.
 
+## Agent skills
+
+`.claude/skills/ui` is ours and is tracked: it knows this app's traps, and
+every visual claim in this file was checked with it.
+
+Two third-party sets are installed but deliberately **not** committed —
+43 MB of triplicated harness copies and a darwin-arm64 binary, reproducible in
+one line each:
+
+```sh
+npx skills add ghaida/intent --all   # 17 UX/design-strategy skills
+npx impeccable install               # frontend design review + hooks
+```
+
+Both write into `.claude`, `.agents` and `.github` at once, and the first also
+drops symlink copies into `agent/` and `data/skills/` — note that this lands
+inside the `data/` directory that holds the generated world route. `.gitignore`
+covers all of it.
+
+`npx impeccable install` also writes `.claude/settings.local.json`, whose hooks
+run its binary after every Edit/Write and again on Stop. Deleting that file
+leaves the skill working and turns the automation off.
+
 ## How to verify things
 
 Do not claim a change works without evidence. Three fixes shipped broken here
