@@ -1,6 +1,6 @@
 // Screenshot a page by driving headless Chrome over CDP.
 //
-//   node .claude/skills/ui/screenshot.mjs <url> <out.png> [width] [height] [waitMs]
+//   node .claude/skills/ui/screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark]
 //
 // Chrome's own --screenshot flag needs --virtual-time-budget, which advances
 // time so fast that real network requests never finish: map tiles and fonts
@@ -10,9 +10,10 @@
 import { spawn } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 
-const [url, out, width = '430', height = '930', waitMs = '9000'] = process.argv.slice(2)
+const [url, out, width = '430', height = '930', waitMs = '9000', scheme] =
+  process.argv.slice(2)
 if (!url || !out) {
-  console.error('usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs]')
+  console.error('usage: screenshot.mjs <url> <out.png> [width] [height] [waitMs] [light|dark]')
   process.exit(1)
 }
 
@@ -84,6 +85,14 @@ await send('Network.enable')
 // Always test what is deployed, not what a stale worker is holding.
 await send('Network.setCacheDisabled', { cacheDisabled: true })
 await send('Network.setBypassServiceWorker', { bypass: true })
+// The app is white in light and black in dark, so a change verified in one
+// can be invisible in the other. Force the scheme rather than inheriting the
+// host's.
+if (scheme) {
+  await send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'prefers-color-scheme', value: scheme }],
+  })
+}
 await send('Page.navigate', { url })
 await sleep(Number(waitMs))
 

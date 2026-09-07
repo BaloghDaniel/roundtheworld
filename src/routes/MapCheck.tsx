@@ -1,10 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import type { Journey } from '../lib/journey'
+import type { Journey, JourneySummary } from '../lib/journey'
+import type { GroupInvite } from '../lib/social'
 
 const JourneyMap = lazy(() => import('../components/JourneyMap'))
 // ?mapcheck=ui renders the real journey screen with the same fixture, so the
 // layout can be reviewed without a session or any Strava data.
 const JourneyScreen = lazy(() => import('./Journey'))
+// ?mapcheck=list does the same for the journeys list.
+const JourneysScreen = lazy(() => import('./Journeys'))
 
 // A journey with no database behind it, so this page renders the real map
 // component, in the real bundle, without needing a session.
@@ -34,6 +37,62 @@ const FAKE: Journey = {
   passed: { name: 'Stockholm', country: 'Sweden', behind_m: 216_000 },
   next: { name: 'Copenhagen', country: 'Denmark', ahead_m: 441_000 },
 }
+
+const FAKE_LIST: JourneySummary[] = [
+  {
+    journey_id: 'a',
+    route_id: '00000000-0000-0000-0000-000000000000',
+    route_slug: 'world',
+    route_name: 'Around the World',
+    is_loop: true,
+    completed: false,
+    origin_name: null,
+    destination_name: null,
+    activities_from: '2026-01-01',
+    travelled_m: 201_000,
+    total_distance_m: 64_381_407,
+    remaining_m: 64_180_407,
+    laps: 0,
+    created_at: '2026-01-01T00:00:00Z',
+    group_id: null,
+    group_mode: null,
+    party_size: 1,
+  },
+  {
+    journey_id: 'b',
+    route_id: '00000000-0000-0000-0000-000000000001',
+    route_slug: 'sthlm-madrid',
+    route_name: 'Stockholm → Madrid',
+    is_loop: false,
+    completed: false,
+    origin_name: 'Stockholm',
+    destination_name: 'Madrid',
+    activities_from: '2026-06-01',
+    travelled_m: 1_480_000,
+    total_distance_m: 3_310_000,
+    remaining_m: 1_830_000,
+    laps: 0,
+    created_at: '2026-06-01T00:00:00Z',
+    group_id: 'g',
+    group_mode: 'tag_along',
+    party_size: 2,
+  },
+]
+
+const FAKE_INVITES: GroupInvite[] = [
+  {
+    group_id: 'g2',
+    mode: 'tag_along',
+    max_gap_m: 100_000,
+    route_name: 'Malmö → Berlin',
+    origin_name: 'Malmö',
+    destination_name: 'Berlin',
+    total_distance_m: 640_000,
+    is_loop: false,
+    invited_by_name: 'Madicken',
+    invited_by_avatar: null,
+  },
+]
 
 function measure() {
   const rows: string[] = []
@@ -76,12 +135,33 @@ function measure() {
 
 export default function MapCheck() {
   const [report, setReport] = useState('measuring…')
-  const uiOnly = new URLSearchParams(window.location.search).get('mapcheck') === 'ui'
+  const mode = new URLSearchParams(window.location.search).get('mapcheck')
+  const uiOnly = mode === 'ui'
 
   useEffect(() => {
     const t = setInterval(() => setReport(measure()), 500)
     return () => clearInterval(t)
   }, [])
+
+  if (mode === 'list') {
+    // ?empty=1 photographs the zero-journey state, which is the only screen
+    // with no cards under the header.
+    const empty = new URLSearchParams(window.location.search).has('empty')
+    return (
+      <Suspense fallback={null}>
+        <JourneysScreen
+          onOpen={() => {}}
+          onNew={() => {}}
+          onProfile={() => {}}
+          preview={{
+            journeys: empty ? [] : FAKE_LIST,
+            profile: { id: 'me', display_name: 'Daniel', handle: 'daniel', avatar_url: null },
+            invites: empty ? [] : FAKE_INVITES,
+          }}
+        />
+      </Suspense>
+    )
+  }
 
   if (uiOnly) {
     return (

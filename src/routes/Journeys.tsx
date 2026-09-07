@@ -13,6 +13,9 @@ type Props = {
   onOpen: (id: string) => void
   onNew: () => void
   onProfile: () => void
+  /** Fixture data for ?mapcheck=list, so the screen can be photographed
+   *  without a session. Never set in the app itself. */
+  preview?: { journeys: JourneySummary[]; profile: Profile | null; invites: GroupInvite[] }
 }
 
 const MODE_LABEL: Record<GroupInvite['mode'], string> = {
@@ -101,7 +104,7 @@ function JourneyCard({
   )
 }
 
-export default function Journeys({ onOpen, onNew, onProfile }: Props) {
+export default function Journeys({ onOpen, onNew, onProfile, preview }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [invites, setInvites] = useState<GroupInvite[]>([])
   const [journeys, setJourneys] = useState<JourneySummary[] | null>(null)
@@ -110,6 +113,12 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
+    if (preview) {
+      setJourneys(preview.journeys)
+      setProfile(preview.profile)
+      setInvites(preview.invites)
+      return
+    }
     try {
       const [list, me, pending] = await Promise.all([
         fetchJourneys(),
@@ -123,7 +132,7 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
       setError(err instanceof Error ? err.message : 'Could not load your journeys')
       setJourneys([])
     }
-  }, [])
+  }, [preview])
 
   useEffect(() => {
     void load()
@@ -156,6 +165,14 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
         <h1 className="min-w-0 flex-1 truncate font-semibold tracking-tight text-ink">
           Your journeys
         </h1>
+        <button
+          type="button"
+          onClick={onNew}
+          className="shrink-0 rounded-full bg-accent/10 px-3.5 py-2.5 text-[11px] font-extrabold uppercase tracking-wide text-accent transition active:scale-[0.98] hover:bg-accent/20"
+        >
+          <span aria-hidden className="mr-1 text-sm leading-none">+</span>
+          New
+        </button>
         <button
           type="button"
           onClick={onProfile}
@@ -194,8 +211,7 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
                   <button
                     type="button"
                     onClick={async () => {
-                      const today = new Date().toISOString().slice(0, 10)
-                      const id = await respondToGroupInvite(invite.group_id, true, today)
+                      const id = await respondToGroupInvite(invite.group_id, true)
                       await load()
                       if (id) onOpen(id)
                     }}
@@ -206,7 +222,7 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
                   <button
                     type="button"
                     onClick={async () => {
-                      await respondToGroupInvite(invite.group_id, false, '2026-01-01')
+                      await respondToGroupInvite(invite.group_id, false)
                       await load()
                     }}
                     className="rounded-xl border border-hair px-3 py-2 text-xs text-ink"
@@ -223,12 +239,15 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
       {journeys === null ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : journeys.length === 0 ? (
-        <div className="card space-y-3 px-5 py-8 text-center">
+        <div className="card space-y-4 px-5 py-8 text-center">
           <p className="font-semibold text-ink">No journeys yet</p>
           <p className="text-pretty text-sm leading-relaxed text-muted">
             Pick somewhere to run to — a city across the continent, or the whole
             way around the world.
           </p>
+          <button type="button" onClick={onNew} className="btn-accent">
+            Start a journey
+          </button>
         </div>
       ) : (
         <ul className="space-y-3">
@@ -253,14 +272,6 @@ export default function Journeys({ onOpen, onNew, onProfile }: Props) {
           Tap Delete again to remove that journey. Your activities are untouched.
         </p>
       )}
-
-      <button
-        type="button"
-        onClick={onNew}
-        className="rounded-2xl btn-accent w-full transition hover:brightness-110"
-      >
-        New journey
-      </button>
     </main>
   )
 }
