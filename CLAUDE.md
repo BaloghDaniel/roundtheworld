@@ -113,7 +113,6 @@ reintroduce the bug.
   member and accepting an invitation cannot choose another. Picking your own
   meant tagging along with someone who began months ago: the newcomer starts
   hopelessly behind and, under the leash rule, instantly pins the leader.
-
 - **Column grants, not a column REVOKE.** The "update own profile" policy lets
   a user write their own row, and therefore every column on it. A column-level
   `REVOKE` does *not* close that: Postgres keeps the broader table-wide `UPDATE`
